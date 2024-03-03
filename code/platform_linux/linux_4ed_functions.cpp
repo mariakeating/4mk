@@ -62,6 +62,17 @@ system_get_path(Arena* arena, System_Path_Code path_code){
     return(result);
 }
 
+// TODO(maria): put this somewhere more appropriate,
+
+#ifndef strndupa
+#define strndupa(s, n) \
+	(__extension__ ({const char *__in = (s);                    \
+			 size_t __len = strnlen (__in, (n)) + 1;    \
+			 char *__out = (char *) alloca (__len);     \
+			 __out[__len-1] = '\0';                     \
+			 (char *) memcpy (__out, __in, __len-1);}))
+#endif
+
 internal String_Const_u8
 system_get_canonical(Arena* arena, String_Const_u8 name){
     
@@ -116,6 +127,13 @@ system_get_canonical(Arena* arena, String_Const_u8 name){
     // TODO: use realpath at this point to resolve symlinks?
     return SCu8(output, q - output);
 }
+
+// TODO(maria): put this somewhere more appropriate.
+
+#ifndef __COMPAR_FN_T
+#define __COMPAR_FN_T
+typedef int (*__compar_fn_t)(const void *, const void *);
+#endif
 
 internal File_List
 system_get_file_list(Arena* arena, String_Const_u8 directory){
@@ -334,7 +352,7 @@ function
 system_universal_date_time_from_local_sig(){
     struct tm local_tm = {};
     linux_tm_from_date_time(&local_tm, date_time);
-    time_t loc_time = timelocal(&local_tm);
+    time_t loc_time = mktime(&local_tm);
     struct tm *utc_tm = gmtime(&loc_time);
     Date_Time result = {};
     linux_date_time_from_tm(&result, utc_tm);
